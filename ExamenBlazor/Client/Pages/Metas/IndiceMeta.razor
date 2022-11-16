@@ -1,0 +1,105 @@
+﻿@page "/indice-metas"
+@inject IRepositorio repositorio
+@inject IMostrarMensaje mostrarMensajes
+@inject IJSRuntime JS
+@inject NavigationManager navigationManager
+
+<div class="card mb-3">
+    <div class="card-header bg-light">
+        <div class="row justify-content-between align-items-center">
+            <div class="col-sm-auto">
+                <div class="d-inline-block mr-3">
+                    <div class="input-group input-group-sm d-flex align-items-center">
+                        <h5 class="mb-0">Metas</h5>
+                    </div>
+                </div>
+                <div class="d-inline-block mr-3">
+                    <div class="input-group input-group-sm d-flex align-items-center">
+                        <a class="btn btn-outline-primary btn-sm" href="crear-meta"><span class="fas fa-plus" data-fa-transform="shrink-3 down-2"></span><span class="d-none d-sm-inline-block ml-1">Crear Meta</span></a>
+                    </div>
+                </div>              
+            </div>
+        </div>
+    </div>
+    <div class="card-body border-top">
+        @if (ListadeMetas != null)
+        {
+        <div class="table-responsive">
+            <table class="table table-striped table-sm table-hover table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Fecha de Cración</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ListadeMetas)
+                    {
+                        <tr>
+                            <td>
+                                <a href="detalles-meta/@item.MetaId">
+                                    @item.Nombre
+                                </a>                           
+                            </td>
+                            <td>
+                                @if (item.FechadeCreacion != null)
+                                {
+                                    @item.FechadeCreacion.Value.ToString("dd/MM/yyyy")
+                                }
+                            </td>
+                            <td>
+                                <a class="btn p-0" href="editar-meta/@item.MetaId" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
+                                    <span class="text-500 fas fa-edit" />
+                                </a>
+                                <button class="btn p-0 ms-2" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Borrar" @onclick="@(() => BorrarMeta(item))">
+                                    <span class="text-500 fas fa-trash-alt"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>
+    <div class="card-footer border-top d-flex justify-content-center bg-transparent">
+        
+    </div>
+</div>
+
+@code{
+
+    public List<Meta> ListadeMetas { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        var responseHttp = await repositorio.Get<List<Meta>>("api/Meta");
+        ListadeMetas = responseHttp.Response;
+    }
+
+    private async Task BorrarMeta(Meta meta)
+    {
+        string mensajeconfirmacion = "";
+
+        var confirmar = await JS.Confirm($"¿Desea borrar la meta {meta.Nombre}?", mensajeconfirmacion, IJSRuntimeExtensionMethods.TipoMensajeSweetAlert.question);
+        if (confirmar)
+        {
+            var responseHttp = await repositorio.Delete($"api/Meta/{meta.MetaId}");
+            if (responseHttp.Error)
+            {
+                await mostrarMensajes.MostrarMensajeError(await responseHttp.GetBody());
+            }
+            else
+            {
+                ListadeMetas.Remove(meta);
+                await Cargar();
+            }
+        }
+    }
+}

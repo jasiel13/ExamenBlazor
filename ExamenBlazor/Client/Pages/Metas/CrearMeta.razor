@@ -1,0 +1,24 @@
+﻿@page "/crear-meta"
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IMostrarMensaje mostrarMensajes
+
+<FormularioMetas OnValidSubmit="Crear" Meta="Meta" Titulo="Crear Meta"/>
+
+@code {
+    private Meta Meta = new Meta();
+
+    async Task Crear()
+    {
+        var httpResponse = await repositorio.Post("api/Meta", Meta);
+        @if (httpResponse.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await httpResponse.GetBody());
+        }
+        else
+        {
+            await mostrarMensajes.MostrarMensajeExitoso("Meta Creada");
+            navigationManager.NavigateTo("indice-metas");
+        }
+    }
+}

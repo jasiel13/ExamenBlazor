@@ -1,0 +1,48 @@
+﻿@inject IRepositorio repositorio
+
+<EditForm Model="@Meta" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="row">
+                <div class="col">
+                    <h5 class="mb-0">@Titulo</h5><br>
+                </div>
+                <div class="col-auto d-none d-sm-block">
+                    <input type="date" class="form-control form-control-sm" id="fecha" @bind-value="@Meta.FechadeCreacion" disabled />
+                </div>
+            </div>
+        </div>
+        <div class="card-body border-top">
+            <div class="form-row">
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label for="nombremeta">Nombre de la meta</label>
+                        <InputText class="form-control form-control-sm" id="nombremeta" placeholder="Meta" @bind-Value="@Meta.Nombre" />
+                        <ValidationMessage For="@(() => Meta.Nombre)" />
+                    </div>
+                </div>              
+            </div>
+        </div>
+        <div class="card-footer border-top text-right bg-transparent">
+            <button class="btn btn-secondary btn-sm mr-2" type="submit"><spoan class="fas fa-check fs--2 mr-1"></spoan>Guardar</button>
+        </div>
+    </div>
+</EditForm>
+<br />
+
+@code{
+    
+    [Parameter] public Meta Meta { get; set; }
+    [Parameter] public bool Es_EditarMeta { get; set; }
+    [Parameter] public string Titulo { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }   
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (Es_EditarMeta == false)
+        {
+            Meta.FechadeCreacion = DateTime.Now;
+        }       
+    }  
+}
